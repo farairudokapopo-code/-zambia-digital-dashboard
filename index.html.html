@@ -1,0 +1,763 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<!--
+  ============================================================
+  Zambia Digital Impact Dashboard
+  Built by Farai Kapopo — Computer Science, Livingstone College
+  
+  This project tracks digital infrastructure, education access,
+  and economic inclusion across Zambia's 10 provinces.
+
+  Why I built this:
+  I grew up in Zambia and saw firsthand how unequal access to
+  technology shapes what futures are available to people. This
+  dashboard is my attempt to make that gap visible — and to
+  remind myself what I'm studying toward. When I graduate, I
+  want to come back and help build the systems that weren't
+  there when I needed them.
+
+  Data sources:
+  - ZICTA (Zambia Information and Communications Technology Authority) 2024
+  - World Bank Digital Development Report 2024
+  - Zambia Smart Zambia Institute
+  - Ministry of Education Digital Readiness Survey 2023
+
+  Stack: HTML · CSS · Vanilla JavaScript (no frameworks)
+  ============================================================
+-->
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="A data dashboard tracking digital infrastructure, education access, and economic inclusion across Zambia." />
+  <meta name="author" content="Farai Kapopo" />
+  <title>Zambia Digital Impact Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Serif+Display&display=swap" rel="stylesheet" />
+  <style>
+    /* ── Reset ─────────────────────────────────────────── */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    /* ── Tokens ─────────────────────────────────────────── */
+    :root {
+      --green:        #198C45;
+      --green-dark:   #0d5c2d;
+      --green-light:  #e6f4ec;
+      --red:          #E3002B;
+      --red-light:    #fce8ec;
+      --orange:       #EF7D00;
+      --orange-light: #fef3d9;
+      --blue-light:   #e8edfb;
+      --blue-text:    #1a3a8f;
+
+      --text-primary:   #1a1a1a;
+      --text-secondary: #5c5c5c;
+      --text-muted:     #999;
+
+      --surface-0: #f4f4f2;
+      --surface-1: #efefed;
+      --surface-2: #ffffff;
+
+      --border:       rgba(0, 0, 0, 0.10);
+      --border-strong:rgba(0, 0, 0, 0.18);
+
+      --radius: 8px;
+      --font: 'DM Sans', system-ui, sans-serif;
+      --font-display: 'DM Serif Display', Georgia, serif;
+    }
+
+    /* ── Base ─────────────────────────────────────────── */
+    body {
+      font-family: var(--font);
+      background: var(--surface-0);
+      color: var(--text-primary);
+      min-height: 100vh;
+      padding: 2rem 1rem;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .dashboard {
+      max-width: 780px;
+      margin: 0 auto;
+    }
+
+    /* ── Hero ─────────────────────────────────────────── */
+    .hero {
+      background: linear-gradient(135deg, #198C45 0%, #0d5c2d 50%, #E3002B 100%);
+      border-radius: 16px;
+      padding: 2.5rem 2rem 2rem;
+      margin-bottom: 1.5rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: -40px;
+      right: -40px;
+      width: 200px;
+      height: 200px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.06);
+    }
+
+    .hero::after {
+      content: '';
+      position: absolute;
+      bottom: -60px;
+      left: 30%;
+      width: 300px;
+      height: 300px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.04);
+    }
+
+    .hero-eagle {
+      font-size: 2.5rem;
+      position: absolute;
+      right: 2rem;
+      top: 1.5rem;
+      opacity: 0.9;
+    }
+
+    .hero-eyebrow {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, 0.65);
+      margin-bottom: 0.5rem;
+    }
+
+    .hero-title {
+      font-family: var(--font-display);
+      font-size: 2.2rem;
+      color: #fff;
+      line-height: 1.15;
+      margin-bottom: 0.6rem;
+    }
+
+    .hero-sub {
+      font-size: 14px;
+      color: rgba(255, 255, 255, 0.78);
+      max-width: 460px;
+      line-height: 1.65;
+    }
+
+    /* ── Flag stripe ──────────────────────────────────── */
+    .flag-stripe {
+      display: flex;
+      height: 5px;
+      border-radius: 99px;
+      overflow: hidden;
+      margin-bottom: 1.5rem;
+    }
+
+    .stripe-g { flex: 1; background: #198C45; }
+    .stripe-r { flex: 1; background: #E3002B; }
+    .stripe-b { flex: 1; background: #1a1a1a; }
+    .stripe-o { flex: 0 0 38px; background: #EF7D00; }
+
+    /* ── Section label ────────────────────────────────── */
+    .section-label {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 0.75rem;
+    }
+
+    /* ── Stat cards ───────────────────────────────────── */
+    .grid-4 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 12px;
+      margin-bottom: 1.5rem;
+    }
+
+    .stat-card {
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1rem 1.2rem;
+    }
+
+    .stat-label {
+      font-size: 12px;
+      color: var(--text-secondary);
+      margin-bottom: 6px;
+    }
+
+    .stat-value {
+      font-size: 24px;
+      font-weight: 600;
+      color: var(--text-primary);
+      line-height: 1;
+    }
+
+    .stat-delta {
+      font-size: 11px;
+      margin-top: 5px;
+      display: flex;
+      align-items: center;
+      gap: 3px;
+    }
+
+    .delta-up   { color: var(--green); }
+    .delta-down { color: var(--red); }
+
+    .delta-arrow {
+      font-style: normal;
+      font-weight: 600;
+    }
+
+    /* ── Tabs ─────────────────────────────────────────── */
+    .tabs {
+      display: flex;
+      gap: 4px;
+      margin-bottom: 1rem;
+      background: var(--surface-1);
+      border-radius: var(--radius);
+      padding: 4px;
+    }
+
+    .tab {
+      flex: 1;
+      padding: 7px 12px;
+      font-size: 13px;
+      font-weight: 500;
+      border-radius: 6px;
+      cursor: pointer;
+      border: 1px solid transparent;
+      background: transparent;
+      color: var(--text-secondary);
+      font-family: var(--font);
+      transition: all 0.15s ease;
+      text-align: center;
+    }
+
+    .tab:hover { color: var(--text-primary); }
+
+    .tab.active {
+      background: var(--surface-2);
+      color: var(--text-primary);
+      border-color: var(--border);
+    }
+
+    /* ── Panels ───────────────────────────────────────── */
+    .panel { display: none; }
+    .panel.active { display: block; }
+
+    /* ── Two-column grid ──────────────────────────────── */
+    .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    /* ── Cards ────────────────────────────────────────── */
+    .card {
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.25rem;
+    }
+
+    .card-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 1rem;
+    }
+
+    /* ── Bar chart rows ───────────────────────────────── */
+    .bar-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 11px;
+    }
+
+    .bar-row:last-child { margin-bottom: 0; }
+
+    .bar-label {
+      font-size: 13px;
+      color: var(--text-secondary);
+      width: 95px;
+      flex-shrink: 0;
+    }
+
+    .bar-track {
+      flex: 1;
+      height: 8px;
+      background: var(--surface-0);
+      border-radius: 99px;
+      overflow: hidden;
+    }
+
+    .bar-fill {
+      height: 100%;
+      border-radius: 99px;
+      width: 0;
+      transition: width 1.1s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .bar-pct {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text-secondary);
+      width: 34px;
+      text-align: right;
+    }
+
+    /* ── Initiatives list ─────────────────────────────── */
+    .initiative-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .initiative {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 12px 14px;
+      background: var(--surface-2);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+
+    .initiative:hover {
+      border-color: var(--border-strong);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+
+    .init-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: var(--radius);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      font-size: 17px;
+    }
+
+    .init-green { background: var(--green-light); }
+    .init-gold  { background: var(--orange-light); }
+
+    .init-name {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .init-desc {
+      font-size: 12px;
+      color: var(--text-secondary);
+      margin-top: 3px;
+      line-height: 1.5;
+    }
+
+    .status-pill {
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      padding: 2px 9px;
+      border-radius: 99px;
+      margin-top: 5px;
+      display: inline-block;
+    }
+
+    .pill-active   { background: var(--green-light);  color: var(--green-dark); }
+    .pill-planned  { background: var(--orange-light);  color: #7a5600; }
+    .pill-progress { background: var(--blue-light);    color: var(--blue-text); }
+
+    /* ── Footer CTA ───────────────────────────────────── */
+    .footer-cta {
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.25rem 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      flex-wrap: wrap;
+      margin-top: 1.5rem;
+    }
+
+    .cta-text { font-size: 14px; color: var(--text-secondary); line-height: 1.5; }
+    .cta-text strong { color: var(--text-primary); font-weight: 600; display: block; margin-bottom: 2px; }
+
+    .cta-btn {
+      background: var(--green);
+      color: #fff;
+      border: none;
+      border-radius: var(--radius);
+      padding: 9px 20px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: var(--font);
+      white-space: nowrap;
+      text-decoration: none;
+      display: inline-block;
+      transition: background 0.15s;
+    }
+
+    .cta-btn:hover { background: var(--green-dark); }
+
+    /* ── Footer credit ────────────────────────────────── */
+    .page-footer {
+      margin-top: 2rem;
+      text-align: center;
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .page-footer a {
+      color: var(--green);
+      text-decoration: none;
+    }
+
+    .page-footer a:hover { text-decoration: underline; }
+
+    /* ── Responsive ───────────────────────────────────── */
+    @media (max-width: 520px) {
+      body { padding: 1rem 0.75rem; }
+      .hero-title { font-size: 1.7rem; }
+      .hero-eagle { font-size: 2rem; top: 1rem; right: 1rem; }
+      .grid-4 { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+</head>
+
+<body>
+  <main class="dashboard" role="main">
+
+    <!-- Hero -->
+    <header class="hero">
+      <span class="hero-eagle" aria-hidden="true">🦅</span>
+      <p class="hero-eyebrow">Zambia digital futures</p>
+      <h1 class="hero-title">One Nation,<br>One Network</h1>
+      <p class="hero-sub">Tracking digital infrastructure, education access, and economic inclusion across all 10 provinces.</p>
+    </header>
+
+    <!-- Zambian flag colours -->
+    <div class="flag-stripe" role="presentation">
+      <div class="stripe-g"></div>
+      <div class="stripe-r"></div>
+      <div class="stripe-b"></div>
+      <div class="stripe-o"></div>
+    </div>
+
+    <!-- National stats -->
+    <p class="section-label">National snapshot — 2025</p>
+    <div class="grid-4">
+      <div class="stat-card">
+        <p class="stat-label">Internet access</p>
+        <p class="stat-value">33%</p>
+        <p class="stat-delta delta-up">
+          <i class="delta-arrow" aria-hidden="true">↑</i> +4% vs 2023
+        </p>
+      </div>
+      <div class="stat-card">
+        <p class="stat-label">Mobile penetration</p>
+        <p class="stat-value">54%</p>
+        <p class="stat-delta delta-up">
+          <i class="delta-arrow" aria-hidden="true">↑</i> +7% vs 2023
+        </p>
+      </div>
+      <div class="stat-card">
+        <p class="stat-label">Schools with internet</p>
+        <p class="stat-value">18%</p>
+        <p class="stat-delta delta-down">
+          <i class="delta-arrow" aria-hidden="true">↓</i> target: 60%
+        </p>
+      </div>
+      <div class="stat-card">
+        <p class="stat-label">Digital literacy</p>
+        <p class="stat-value">27%</p>
+        <p class="stat-delta delta-up">
+          <i class="delta-arrow" aria-hidden="true">↑</i> +5% vs 2023
+        </p>
+      </div>
+    </div>
+
+    <!-- Tabs -->
+    <nav class="tabs" role="tablist" aria-label="Dashboard sections">
+      <button class="tab active" role="tab" aria-selected="true"  onclick="switchTab('access', this)">Access</button>
+      <button class="tab"        role="tab" aria-selected="false" onclick="switchTab('education', this)">Education</button>
+      <button class="tab"        role="tab" aria-selected="false" onclick="switchTab('initiatives', this)">Initiatives</button>
+    </nav>
+
+    <!-- Tab: Access -->
+    <div id="tab-access" class="panel active" role="tabpanel">
+      <div class="grid-2">
+
+        <div class="card">
+          <p class="card-title">Connectivity by province</p>
+          <div class="bar-row">
+            <span class="bar-label">Lusaka</span>
+            <div class="bar-track"><div class="bar-fill" data-pct="72" style="background:#198C45"></div></div>
+            <span class="bar-pct">72%</span>
+          </div>
+          <div class="bar-row">
+            <span class="bar-label">Copperbelt</span>
+            <div class="bar-track"><div class="bar-fill" data-pct="61" style="background:#198C45"></div></div>
+            <span class="bar-pct">61%</span>
+          </div>
+          <div class="bar-row">
+            <span class="bar-label">Southern</span>
+            <div class="bar-track"><div class="bar-fill" data-pct="38" style="background:#EF7D00"></div></div>
+            <span class="bar-pct">38%</span>
+          </div>
+          <div class="bar-row">
+            <span class="bar-label">Eastern</span>
+            <div class="bar-track"><div class="bar-fill" data-pct="21" style="background:#EF7D00"></div></div>
+            <span class="bar-pct">21%</span>
+          </div>
+          <div class="bar-row">
+            <span class="bar-label">Northern</span>
+            <div class="bar-track"><div class="bar-fill" data-pct="14" style="background:#E3002B"></div></div>
+            <span class="bar-pct">14%</span>
+          </div>
+          <div class="bar-row">
+            <span class="bar-label">Western</span>
+            <div class="bar-track"><div class="bar-fill" data-pct="11" style="background:#E3002B"></div></div>
+            <span class="bar-pct">11%</span>
+          </div>
+        </div>
+
+        <div class="card">
+          <p class="card-title">Access gaps to close</p>
+          <div class="bar-row">
+            <span class="bar-label">Rural women</span>
+            <div class="bar-track"><div class="bar-fill" data-pct="82" style="background:#E3002B"></div></div>
+            <span class="bar-pct">82%</span>
+          </div>
+          <div class="bar-row">
+            <span class="bar-label">Rural men</span>
+            <div class="bar-track"><div class="bar-fill" data-pct="69" style="background:#EF7D00"></div></div>
+            <span class="bar-pct">69%</span>
+          </div>
+          <div class="bar-row">
+            <span class="bar-label">Rural youth</span>
+            <div class="bar-track"><div class="bar-fill" data-pct="61" style="background:#EF7D00"></div></div>
+            <span class="bar-pct">61%</span>
+          </div>
+          <div class="bar-row">
+            <span class="bar-label">Smallholders</span>
+            <div class="bar-track"><div class="bar-fill" data-pct="77" style="background:#E3002B"></div></div>
+            <span class="bar-pct">77%</span>
+          </div>
+          <div class="bar-row">
+            <span class="bar-label">PWDs</span>
+            <div class="bar-track"><div class="bar-fill" data-pct="88" style="background:#E3002B"></div></div>
+            <span class="bar-pct">88%</span>
+          </div>
+          <div class="bar-row">
+            <span class="bar-label">Urban elderly</span>
+            <div class="bar-track"><div class="bar-fill" data-pct="54" style="background:#EF7D00"></div></div>
+            <span class="bar-pct">54%</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Tab: Education -->
+    <div id="tab-education" class="panel" role="tabpanel">
+      <div class="grid-2">
+
+        <div class="card">
+          <p class="card-title">School digital readiness — now</p>
+          <div class="bar-row">
+            <span class="bar-label">Electricity</span>
+            <div class="bar-track"><div class="bar-fill" data-pct="51" style="background:#198C45"></div></div>
+            <span class="bar-pct">51%</span>
+          </div>
+          <div class="bar-row">
+            <span class="bar-label">Has internet</span>
+            <div class="bar-track"><div class="bar-fill" data-pct="18" style="background:#E3002B"></div></div>
+            <span class="bar-pct">18%</span>
+          </div>
+          <div class="bar-row">
+            <span class="bar-label">Has computers</span>
+            <div class="bar-track"><div class="bar-fill" data-pct="22" style="background:#E3002B"></div></div>
+            <span class="bar-pct">22%</span>
+          </div>
+          <div class="bar-row">
+            <span class="bar-label">Trained staff</span>
+            <div class="bar-track"><div class="bar-fill" data-pct="31" style="background:#EF7D00"></div></div>
+            <span class="bar-pct">31%</span>
+          </div>
+          <div class="bar-row">
+            <span class="bar-label">Digital curriculum</span>
+            <div class="bar-track"><div class="bar-fill" data-pct="14" style="background:#E3002B"></div></div>
+            <span class="bar-pct">14%</span>
+          </div>
+        </div>
+
+        <div class="card">
+          <p class="card-title">Government targets — 2030</p>
+          <div class="bar-row">
+            <span class="bar-label">Electricity</span>
+            <div class="bar-track"><div class="bar-fill" data-pct="100" style="background:#198C45"></div></div>
+            <span class="bar-pct">100%</span>
+          </div>
+          <div class="bar-row">
+            <span class="bar-label">Has internet</span>
+            <div class="bar-track"><div class="bar-fill" data-pct="60" style="background:#198C45"></div></div>
+            <span class="bar-pct">60%</span>
+          </div>
+          <div class="bar-row">
+            <span class="bar-label">Has computers</span>
+            <div class="bar-track"><div class="bar-fill" data-pct="80" style="background:#198C45"></div></div>
+            <span class="bar-pct">80%</span>
+          </div>
+          <div class="bar-row">
+            <span class="bar-label">Trained staff</span>
+            <div class="bar-track"><div class="bar-fill" data-pct="90" style="background:#198C45"></div></div>
+            <span class="bar-pct">90%</span>
+          </div>
+          <div class="bar-row">
+            <span class="bar-label">Digital curriculum</span>
+            <div class="bar-track"><div class="bar-fill" data-pct="70" style="background:#198C45"></div></div>
+            <span class="bar-pct">70%</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Tab: Initiatives -->
+    <div id="tab-initiatives" class="panel" role="tabpanel">
+      <div class="initiative-list">
+
+        <div class="initiative">
+          <div class="init-icon init-green" aria-hidden="true">🌐</div>
+          <div>
+            <p class="init-name">Smart Zambia Initiative</p>
+            <p class="init-desc">Government-led national digitisation programme covering e-government services, broadband rollout, and ICT skills training.</p>
+            <span class="status-pill pill-active">Active</span>
+          </div>
+        </div>
+
+        <div class="initiative">
+          <div class="init-icon init-gold" aria-hidden="true">💡</div>
+          <div>
+            <p class="init-name">Digital Economy Blueprint</p>
+            <p class="init-desc">World Bank-backed roadmap to grow Zambia's digital economy to 5% of GDP by 2030 through investment in infrastructure and local tech talent.</p>
+            <span class="status-pill pill-progress">In progress</span>
+          </div>
+        </div>
+
+        <div class="initiative">
+          <div class="init-icon init-green" aria-hidden="true">📚</div>
+          <div>
+            <p class="init-name">Rural Education Platforms</p>
+            <p class="init-desc">Mobile-first learning tools built for low-bandwidth rural school environments — designed to work even on 2G connections.</p>
+            <span class="status-pill pill-planned">Planned</span>
+          </div>
+        </div>
+
+        <div class="initiative">
+          <div class="init-icon init-gold" aria-hidden="true">📱</div>
+          <div>
+            <p class="init-name">Mobile Money Access</p>
+            <p class="init-desc">Expanding fintech and mobile banking to the estimated 6 million unbanked adults across rural provinces.</p>
+            <span class="status-pill pill-active">Active</span>
+          </div>
+        </div>
+
+        <div class="initiative">
+          <div class="init-icon init-green" aria-hidden="true">🌾</div>
+          <div>
+            <p class="init-name">AgriTech for Smallholders</p>
+            <p class="init-desc">Digital tools connecting smallholder farmers to markets, weather data, and real-time crop guidance via SMS and app.</p>
+            <span class="status-pill pill-progress">In progress</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Footer CTA -->
+    <div class="footer-cta">
+      <div class="cta-text">
+        <strong>Every gap on this dashboard is a solvable problem.</strong>
+        This project is part of my long-term goal to build the digital infrastructure Zambia deserves.
+      </div>
+      <a
+        class="cta-btn"
+        href="https://github.com/faraikapopo"
+        target="_blank"
+        rel="noopener noreferrer"
+      >View on GitHub →</a>
+    </div>
+
+    <!-- Page footer -->
+    <footer class="page-footer">
+      <p>Built by <a href="https://github.com/faraikapopo" target="_blank" rel="noopener noreferrer">Farai Kapopo</a> &mdash; Computer Science, Livingstone College &mdash; 2026</p>
+      <p style="margin-top: 4px;">Data: ZICTA 2024 &middot; World Bank 2024 &middot; Ministry of Education 2023</p>
+    </footer>
+
+  </main>
+
+  <script>
+    /* ── Tab switching ─────────────────────────────────── */
+    function switchTab(name, clickedTab) {
+      // Update panels
+      document.querySelectorAll('.panel').forEach(function(panel) {
+        panel.classList.remove('active');
+      });
+      document.getElementById('tab-' + name).classList.add('active');
+
+      // Update tab buttons
+      document.querySelectorAll('.tab').forEach(function(tab) {
+        tab.classList.remove('active');
+        tab.setAttribute('aria-selected', 'false');
+      });
+      clickedTab.classList.add('active');
+      clickedTab.setAttribute('aria-selected', 'true');
+
+      // Animate bars in the newly active panel
+      animateBars(document.getElementById('tab-' + name));
+    }
+
+    /* ── Bar animation ─────────────────────────────────── */
+    function animateBars(container) {
+      var fills = container.querySelectorAll('.bar-fill');
+      fills.forEach(function(fill) {
+        var pct = fill.getAttribute('data-pct');
+        // Reset first so animation re-triggers on tab switch
+        fill.style.width = '0%';
+        requestAnimationFrame(function() {
+          requestAnimationFrame(function() {
+            fill.style.width = pct + '%';
+          });
+        });
+      });
+    }
+
+    /* ── Run on page load ──────────────────────────────── */
+    document.addEventListener('DOMContentLoaded', function() {
+      // Animate the initial visible panel
+      animateBars(document.getElementById('tab-access'));
+    });
+  </script>
+
+</body>
+</html>
