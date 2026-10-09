@@ -1,4 +1,4 @@
-# Farai Kapopo — Personal Budget
+# Farai Kapopo — Zambia Digital Dashboard
 
 A data dashboard tracking digital infrastructure, education access, and economic inclusion across Zambia's 10 provinces.
 
